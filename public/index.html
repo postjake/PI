@@ -26,7 +26,7 @@
     justify-content: space-between;
     padding: 0 20px;
     box-sizing: border-box;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid #33ff33;
   }
 
   #logo {
@@ -51,39 +51,55 @@
   }
 
   #terminal {
-    position: absolute;
-    left: 0;
-    top: 50px;
-    width: 33%;
-    height: calc(100% - 50px);
-    background-color: black;
-    border-right: 1px solid #444;
-    box-sizing: border-box;
-    padding: 20px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    font-size: 24px; /* increased from default (~16px) */
-  }
+  position: absolute;
+  left: 0;
+  top: 50px;
+  width: 20%;
+  height: calc(100% - 50px);
+  background-color: black;
+  border-right: 1px solid #33ff33;
+  box-sizing: border-box;
+  padding: 20px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-size: 24px;
+  scrollbar-color: #0f0013 black; /* Firefox */
+  scrollbar-width: thin;
+}
 
-  #ambient-btn {
+/* WebKit (Chrome, Edge, Safari) scrollbar custom styling */
+#terminal::-webkit-scrollbar {
+  width: 10px;
+}
+#terminal::-webkit-scrollbar-track {
+  background: black;
+}
+#terminal::-webkit-scrollbar-thumb {
+  background-color: #0f0013;
+  border: 2px solid black;
+  border-radius: 5px;
+}
+
+
+ /*#ambient-btn {
     margin-top: 20px;
     padding: 5px 10px;
     font-family: 'VT323', monospace;
-    font-size: 16px;
-    background-color: #222;
+    font-size: 18px;
+    background-color: #0d0011;
     color: #33ff33;
     border: 1px solid #33ff33;
     cursor: pointer;
-  }
+  }*/
 
   canvas {
     position: absolute;
-    left: 33%;
+    left: 20%;
     top: 50px;
     z-index: -1;
   }
 
-  #start-btn {
+ /*#start-btn { --Toggle used instead--
     position: absolute;
     top: 60px;
     left: 50%;
@@ -92,27 +108,29 @@
     padding: 10px 20px;
     font-size: 16px;
     font-family: 'VT323', monospace;
-    background-color: #222;
+    background-color: #0d0011;
     color: #33ff33;
     border: 1px solid #33ff33;
     cursor: pointer;
-  }
+  }--> using toggle instead*/
 
-  #controls {
+#controls {
   position: absolute;
   bottom: 20px;
   left: 20px;
+  right: 20px;
   display: flex;
-  gap: 10px;
+  justify-content: space-evenly;
+  align-items: center;
   z-index: 5;
 }
 
 .control-btn {
+  min-width: 100px;
   height: 42px;
-  padding: 0 14px;
   font-family: 'VT323', monospace;
   font-size: 18px;
-  background-color: #0d0011; /* purple to match topbar */
+  background-color: #0d0011;
   color: #33ff33;
   border: 1px solid #33ff33;
   cursor: pointer;
@@ -121,15 +139,16 @@
   justify-content: center;
 }
 
+
 #pi-output {
   max-height: calc(100% - 90px);
   overflow-y: auto;
   display: block;
 }
 
-#start-btn {
- /* display: none; /* we'll show it programmatically */
-}
+/*#start-btn {
+ /* display: none; we'll show it programmatically 
+} */
 </style>
 </head>
 <body>
@@ -145,9 +164,9 @@
   <div id="terminal">
     <div id="pi-output">PI: </div>
      <div id="controls">
-      <button id="start-btn" class="control-btn">▶</button>
-       <button id="pause-btn" class="control-btn">⏸</button>
-       <button id="ambient-btn" class="control-btn">🌌 Ambient</button>
+     <!--removed startbutton line--> 
+       <button id="toggle-btn" class="control-btn">▶</button>
+       <button id="ambient-btn" class="control-btn">🌌</button>
      </div>
   </div>
   <script>
@@ -159,18 +178,19 @@ let circles = [];
 let ambient = false;
 let intervalId = null;
 
-document.getElementById("start-btn").onclick = async () => {
+document.getElementById("toggle-btn").onclick = async () => {
   await Tone.start();
   if (!synth) synth = new Tone.PolySynth().toDestination();
-  if (!intervalId) {
-    intervalId = setInterval(playNextDigit, 1000);
-  }
-};
 
-document.getElementById("pause-btn").onclick = () => {
+  const toggleBtn = document.getElementById("toggle-btn");
+
   if (intervalId) {
     clearInterval(intervalId);
     intervalId = null;
+    toggleBtn.textContent = "▶"; // Show play
+  } else {
+    intervalId = setInterval(playNextDigit, 1000);
+    toggleBtn.textContent = "⏸"; // Show pause
   }
 };
 
@@ -188,7 +208,7 @@ function playNextDigit() {
 }
 
 function setup() {
-  createCanvas(windowWidth * (2 / 3), windowHeight - 50);
+  createCanvas(windowWidth * (4 / 5), windowHeight - 50);
   noStroke();
 }
 
@@ -203,7 +223,7 @@ function draw() {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth * (2 / 3), windowHeight - 50);
+  resizeCanvas(windowWidth * (4 / 5), windowHeight - 50);
 }
   </script>
 </body>
