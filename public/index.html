@@ -4,28 +4,123 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pi Audio Visualizer</title>
-  <!-- Load p5.js and Tone.js -->
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.39/Tone.min.js"></script>
   <style>
-    body { margin: 0; overflow: hidden; background: black; color: white; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      color: #33ff33;
+      font-family: 'VT323', monospace;
+      overflow: hidden;
+    }
+
+    #topbar {
+      width: 100%;
+      height: 50px;
+      background-color: #111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-sizing: border-box;
+      border-bottom: 1px solid #444;
+    }
+
+    #logo {
+      color: #33ff33;
+      font-size: 24px;
+    }
+
+    #nav-buttons {
+      display: flex;
+      gap: 15px;
+    }
+
+    .nav-btn {
+      color: #33ff33;
+      background: none;
+      border: 1px solid #33ff33;
+      padding: 5px 10px;
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    #terminal {
+      position: absolute;
+      left: 0;
+      top: 50px;
+      width: 33%;
+      height: calc(100% - 50px);
+      background-color: black;
+      border-right: 1px solid #444;
+      box-sizing: border-box;
+      padding: 20px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    #ambient-btn {
+      margin-top: 20px;
+      padding: 5px 10px;
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+      background-color: #222;
+      color: #33ff33;
+      border: 1px solid #33ff33;
+      cursor: pointer;
+    }
+
+    canvas {
+      position: absolute;
+      left: 33%;
+      top: 50px;
+      z-index: -1;
+    }
+
     #start-btn {
       position: absolute;
-      top: 20px; left: 20px;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 10;
       padding: 10px 20px;
       font-size: 16px;
+      font-family: 'VT323', monospace;
+      background-color: #222;
+      color: #33ff33;
+      border: 1px solid #33ff33;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+
+  <div id="topbar">
+    <div id="logo">πVisualizer</div>
+    <div id="nav-buttons">
+      <button class="nav-btn">About</button>
+      <button class="nav-btn">Donate</button>
+    </div>
+  </div>
+
+  <div id="terminal">
+    <div id="pi-output">PI: </div>
+    <button id="ambient-btn">Toggle Ambient Mode</button>
+  </div>
+
   <button id="start-btn">Start</button>
+
   <script>
     const pi = "314159265358979323846264338327950288419716939937510";
     let index = 0;
     let synth;
     let notes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"];
     let circles = [];
+    let ambient = false;
 
     document.getElementById("start-btn").onclick = async () => {
       await Tone.start();
@@ -33,27 +128,35 @@
       setInterval(() => {
         let digit = parseInt(pi[index % pi.length]);
         let note = notes[digit];
-        synth.triggerAttackRelease(note, "8n");
+        synth.triggerAttackRelease(note, ambient ? "2n" : "8n");
+        document.getElementById("pi-output").textContent += pi[index % pi.length];
         circles.push({x: random(width), y: random(height), r: 0, color: color(random(255), random(255), random(255))});
         index++;
       }, 1000);
       document.getElementById("start-btn").style.display = "none";
     };
 
+    document.getElementById("ambient-btn").onclick = () => {
+      ambient = !ambient;
+    };
+
     function setup() {
-      createCanvas(windowWidth, windowHeight);
+      createCanvas(windowWidth * (2 / 3), windowHeight - 50);
       noStroke();
     }
 
     function draw() {
-      background(0, 25); // trailing effect
+      background(0, 25);
       for (let c of circles) {
         fill(c.color);
         ellipse(c.x, c.y, c.r);
-        c.r += 4;
+        c.r += ambient ? 0.5 : 4;
       }
-      // Limit circle count
       if (circles.length > 100) circles.splice(0, circles.length - 100);
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth * (2 / 3), windowHeight - 50);
     }
   </script>
 </body>
