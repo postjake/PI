@@ -20,7 +20,7 @@
   #topbar {
     width: 100%;
     height: 50px;
-    background-color: #2e1036; /* subtle purple */
+    background-color: #0d0011; /* subtle purple */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -97,6 +97,7 @@
     border: 1px solid #33ff33;
     cursor: pointer;
   }
+
   #controls {
   position: absolute;
   bottom: 20px;
@@ -107,17 +108,27 @@
 }
 
 .control-btn {
-  padding: 5px 10px;
+  height: 42px;
+  padding: 0 14px;
   font-family: 'VT323', monospace;
   font-size: 18px;
-  background-color: #222;
+  background-color: #0d0011; /* purple to match topbar */
   color: #33ff33;
   border: 1px solid #33ff33;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#pi-output {
+  max-height: calc(100% - 90px);
+  overflow-y: auto;
+  display: block;
 }
 
 #start-btn {
-  display: none; /* we'll show it programmatically */
+ /* display: none; /* we'll show it programmatically */
 }
 </style>
 </head>
@@ -132,13 +143,13 @@
   </div>
 
   <div id="terminal">
-  <div id="pi-output">PI: </div>
-  <div id="controls">
-    <button id="start-btn" class="control-btn">▶</button>
-    <button id="pause-btn" class="control-btn">⏸</button>
-    <button id="ambient-btn" class="control-btn">🌌 Ambient</button>
+    <div id="pi-output">PI: </div>
+     <div id="controls">
+      <button id="start-btn" class="control-btn">▶</button>
+       <button id="pause-btn" class="control-btn">⏸</button>
+       <button id="ambient-btn" class="control-btn">🌌 Ambient</button>
+     </div>
   </div>
-</div>
   <script>
     const pi = "314159265358979323846264338327950288419716939937510";
 let index = 0;
