@@ -1,5 +1,5 @@
 # PI
-This is PI Visualizer.
+This is PI Tune.
 MIT license.
 2025
 
