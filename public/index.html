@@ -133,6 +133,7 @@
   let index = 0;
   let synth;
   let circles = [];
+  let pulses = [];
   let intervalId = null;
   let hasStarted = false;
 
@@ -156,7 +157,10 @@
     if (!synth) {
       const tremolo = new Tone.Tremolo(16, 0.7).start();
       const reverb = new Tone.Reverb({ decay: 3, wet: 0.3 }).toDestination();
-      synth = new Tone.PolySynth().connect(tremolo).connect(reverb);
+      synth = new Tone.NoiseSynth({
+        noise: { type: 'pink' },
+        envelope: { attack: 0.001, decay: 0.1, sustain: 0.01, release: 0.1 }
+      }).connect(tremolo).connect(reverb);
     }
 
     const toggleBtn = document.getElementById("toggle-btn");
@@ -171,13 +175,12 @@
         piDigits = piDigits.replace(/^3/, '');
         hasStarted = true;
       }
-      intervalId = setInterval(playNextDigit, 1000);
+      intervalId = setInterval(playNextDigit, 750);
       toggleBtn.textContent = "⏸";
     }
   };
 
   document.getElementById("ambient-btn").onclick = () => {
-    // Switch to next mode
     currentMode = (currentMode + 1) % modes.length;
     notes = modes[currentMode].notes;
     document.getElementById("ambient-btn").textContent = modes[currentMode].icon;
@@ -186,35 +189,62 @@
   function playNextDigit() {
     if (!piDigits || index >= piDigits.length) return;
 
-    const digit = parseInt(piDigits[index]);
-    const note = notes[digit % notes.length];
-    synth.triggerAttackRelease(note, "8n");
-
+    synth.triggerAttackRelease("16n");
     document.getElementById("pi-output").innerHTML += piDigits[index];
 
     circles.push({
       x: random(width),
       y: random(height),
       r: 0,
-      color: color(random(255), random(255), random(255))
+      color: color(random(100, 200), 0, random(100, 200))
     });
+
+    if ((index + 1) % 33 === 0) {
+      const wobbleGain = new Tone.Gain(0).toDestination();
+      const filter = new Tone.Filter(100, "lowpass").connect(wobbleGain);
+      const osc = new Tone.Oscillator(40, "sine").connect(filter);
+
+      wobbleGain.gain.linearRampToValueAtTime(0.4, Tone.now() + 1);
+      wobbleGain.gain.linearRampToValueAtTime(0.0, Tone.now() + 30);
+      osc.start().stop("+30");
+
+      pulses.push({ alpha: 255, time: 0, startIndex: index });
+    }
 
     index++;
   }
 
   function setup() {
     createCanvas(windowWidth * (4 / 5), windowHeight - 50);
-    noStroke();
   }
 
   function draw() {
     background(0, 25);
+
     for (let c of circles) {
       fill(c.color);
+      noStroke();
       ellipse(c.x, c.y, c.r);
       c.r += 2;
     }
     if (circles.length > 100) circles.splice(0, circles.length - 100);
+
+    for (let i = pulses.length - 1; i >= 0; i--) {
+      let p = pulses[i];
+      let digitsSince = index - p.startIndex;
+
+      if (digitsSince > 15) p.alpha -= 8;
+
+      stroke(51, 255, 51, p.alpha);
+      for (let y = 0; y < height; y += 10) {
+        let wiggle = sin((y + p.time) * 0.1) * 20;
+        strokeWeight(random(1, 5));
+        line(0, y + wiggle, width, y + wiggle);
+      }
+
+      p.time += 1;
+      if (p.alpha <= 0 || digitsSince > 33) pulses.splice(i, 1);
+    }
   }
 
   function windowResized() {
