@@ -8,223 +8,219 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.39/Tone.min.js"></script>
   <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: black;
-    color: #33ff33;
-    font-family: 'VT323', monospace;
-    overflow: hidden;
-  }
-
-  #topbar {
-    width: 100%;
-    height: 50px;
-    background-color: #0d0011; /* subtle purple */
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    box-sizing: border-box;
-    border-bottom: 1px solid #33ff33;
-  }
-
-  #logo {
-    color: #33ff33;
-    font-size: 24px;
-    letter-spacing: 1px;
-  }
-
-  #nav-buttons {
-    display: flex;
-    gap: 15px;
-  }
-
-  .nav-btn {
-    color: #33ff33;
-    background: none;
-    border: 1px solid #33ff33;
-    padding: 5px 10px;
-    font-family: 'VT323', monospace;
-    font-size: 18px;
-    cursor: pointer;
-  }
-
-  #terminal {
-  position: absolute;
-  left: 0;
-  top: 50px;
-  width: 20%;
-  height: calc(100% - 50px);
-  background-color: black;
-  border-right: 1px solid #33ff33;
-  box-sizing: border-box;
-  padding: 20px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  font-size: 24px;
-  scrollbar-color: #0f0013 black; /* Firefox */
-  scrollbar-width: thin;
-}
-
-/* WebKit (Chrome, Edge, Safari) scrollbar custom styling */
-#terminal::-webkit-scrollbar {
-  width: 10px;
-}
-#terminal::-webkit-scrollbar-track {
-  background: black;
-}
-#terminal::-webkit-scrollbar-thumb {
-  background-color: #0f0013;
-  border: 2px solid black;
-  border-radius: 5px;
-}
-
-
- /*#ambient-btn {
-    margin-top: 20px;
-    padding: 5px 10px;
-    font-family: 'VT323', monospace;
-    font-size: 18px;
-    background-color: #0d0011;
-    color: #33ff33;
-    border: 1px solid #33ff33;
-    cursor: pointer;
-  }*/
-
-  canvas {
-    position: absolute;
-    left: 20%;
-    top: 50px;
-    z-index: -1;
-  }
-
- /*#start-btn { --Toggle used instead--
-    position: absolute;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    padding: 10px 20px;
-    font-size: 16px;
-    font-family: 'VT323', monospace;
-    background-color: #0d0011;
-    color: #33ff33;
-    border: 1px solid #33ff33;
-    cursor: pointer;
-  }--> using toggle instead*/
-
-#controls {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  z-index: 5;
-}
-
-.control-btn {
-  min-width: 100px;
-  height: 42px;
-  font-family: 'VT323', monospace;
-  font-size: 18px;
-  background-color: #0d0011;
-  color: #33ff33;
-  border: 1px solid #33ff33;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-
-#pi-output {
-  max-height: calc(100% - 90px);
-  overflow-y: auto;
-  display: block;
-}
-
-/*#start-btn {
- /* display: none; we'll show it programmatically 
-} */
-</style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      color: #33ff33;
+      font-family: 'VT323', monospace;
+      overflow: hidden;
+    }
+    #topbar {
+      width: 100%;
+      height: 50px;
+      background-color: #0d0011;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-sizing: border-box;
+      border-bottom: 1px solid #33ff33;
+    }
+    #logo {
+      color: #33ff33;
+      font-size: 24px;
+      letter-spacing: 1px;
+    }
+    #nav-buttons {
+      display: flex;
+      gap: 15px;
+    }
+    .nav-btn {
+      color: #33ff33;
+      background: none;
+      border: 1px solid #33ff33;
+      padding: 5px 10px;
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    #terminal {
+      position: absolute;
+      left: 0;
+      top: 50px;
+      width: 20%;
+      height: calc(100% - 50px);
+      background-color: black;
+      border-right: 1px solid #33ff33;
+      box-sizing: border-box;
+      padding: 20px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-size: 24px;
+      scrollbar-color: #0f0013 black;
+      scrollbar-width: thin;
+    }
+    #terminal::-webkit-scrollbar {
+      width: 10px;
+    }
+    #terminal::-webkit-scrollbar-track {
+      background: black;
+    }
+    #terminal::-webkit-scrollbar-thumb {
+      background-color: #0f0013;
+      border: 2px solid black;
+      border-radius: 5px;
+    }
+    canvas {
+      position: absolute;
+      left: 20%;
+      top: 50px;
+      z-index: -1;
+    }
+    #controls {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      z-index: 5;
+    }
+    .control-btn {
+      min-width: 100px;
+      height: 42px;
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      background-color: #0d0011;
+      color: #33ff33;
+      border: 1px solid #33ff33;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #pi-output {
+      max-height: calc(100% - 90px);
+      overflow-y: auto;
+      display: block;
+      word-wrap: break-word;
+      white-space: normal;
+    }
+  </style>
 </head>
 <body>
 
-  <div id="topbar">
-    <div id="logo">π Visualizer</div>
-    <div id="nav-buttons">
-      <button class="nav-btn">About</button>
-      <button class="nav-btn">Donate</button>
-    </div>
+<div id="topbar">
+  <div id="logo">π Visualizer</div>
+  <div id="nav-buttons">
+    <button class="nav-btn">About</button>
+    <button class="nav-btn">Donate</button>
   </div>
+</div>
 
-  <div id="terminal">
-    <div id="pi-output">PI: </div>
-     <div id="controls">
-     <!--removed startbutton line--> 
-       <button id="toggle-btn" class="control-btn">▶</button>
-       <button id="ambient-btn" class="control-btn">🌌</button>
-     </div>
+<div id="terminal">
+  <div id="pi-output">PI:<br></div>
+  <div id="controls">
+    <button id="toggle-btn" class="control-btn">▶</button>
+    <button id="ambient-btn" class="control-btn">🌌</button>
   </div>
-  <script>
-    const pi = "314159265358979323846264338327950288419716939937510";
-let index = 0;
-let synth;
-let notes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"];
-let circles = [];
-let ambient = false;
-let intervalId = null;
+</div>
 
-document.getElementById("toggle-btn").onclick = async () => {
-  await Tone.start();
-  if (!synth) synth = new Tone.PolySynth().toDestination();
+<script>
+  let piDigits = '';
+  let index = 0;
+  let synth;
+  let circles = [];
+  let intervalId = null;
+  let hasStarted = false;
 
-  const toggleBtn = document.getElementById("toggle-btn");
+  const modes = [
+    { name: "Dorian", icon: "🌌", notes: ["C4", "D4", "D#4", "F4", "G4", "A4", "A#4"] },
+    { name: "Lydian", icon: "🎈", notes: ["C4", "D4", "E4", "F#4", "G4", "A4", "B4"] },
+    { name: "Aeolian", icon: "🌒", notes: ["C4", "D4", "D#4", "F4", "G4", "G#4", "A#4"] }
+  ];
+  let currentMode = 0;
+  let notes = modes[currentMode].notes;
 
-  if (intervalId) {
-    clearInterval(intervalId);
-    intervalId = null;
-    toggleBtn.textContent = "▶"; // Show play
-  } else {
-    intervalId = setInterval(playNextDigit, 1000);
-    toggleBtn.textContent = "⏸"; // Show pause
+  async function loadPi() {
+    const resp = await fetch('pi1m.txt');
+    piDigits = (await resp.text()).replace(/\D/g, '');
   }
-};
 
-document.getElementById("ambient-btn").onclick = () => {
-  ambient = !ambient;
-};
+  loadPi();
 
-function playNextDigit() {
-  let digit = parseInt(pi[index % pi.length]);
-  let note = notes[digit];
-  synth.triggerAttackRelease(note, ambient ? "2n" : "8n");
-  document.getElementById("pi-output").textContent += pi[index % pi.length];
-  circles.push({x: random(width), y: random(height), r: 0, color: color(random(255), random(255), random(255))});
-  index++;
-}
+  document.getElementById("toggle-btn").onclick = async () => {
+    await Tone.start();
+    if (!synth) {
+      const tremolo = new Tone.Tremolo(16, 0.7).start();
+      const reverb = new Tone.Reverb({ decay: 3, wet: 0.3 }).toDestination();
+      synth = new Tone.PolySynth().connect(tremolo).connect(reverb);
+    }
 
-function setup() {
-  createCanvas(windowWidth * (4 / 5), windowHeight - 50);
-  noStroke();
-}
+    const toggleBtn = document.getElementById("toggle-btn");
 
-function draw() {
-  background(0, 25);
-  for (let c of circles) {
-    fill(c.color);
-    ellipse(c.x, c.y, c.r);
-    c.r += ambient ? 0.5 : 4;
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+      toggleBtn.textContent = "▶";
+    } else {
+      if (!hasStarted) {
+        document.getElementById("pi-output").innerHTML += "3.";
+        piDigits = piDigits.replace(/^3/, '');
+        hasStarted = true;
+      }
+      intervalId = setInterval(playNextDigit, 1000);
+      toggleBtn.textContent = "⏸";
+    }
+  };
+
+  document.getElementById("ambient-btn").onclick = () => {
+    // Switch to next mode
+    currentMode = (currentMode + 1) % modes.length;
+    notes = modes[currentMode].notes;
+    document.getElementById("ambient-btn").textContent = modes[currentMode].icon;
+  };
+
+  function playNextDigit() {
+    if (!piDigits || index >= piDigits.length) return;
+
+    const digit = parseInt(piDigits[index]);
+    const note = notes[digit % notes.length];
+    synth.triggerAttackRelease(note, "8n");
+
+    document.getElementById("pi-output").innerHTML += piDigits[index];
+
+    circles.push({
+      x: random(width),
+      y: random(height),
+      r: 0,
+      color: color(random(255), random(255), random(255))
+    });
+
+    index++;
   }
-  if (circles.length > 100) circles.splice(0, circles.length - 100);
-}
 
-function windowResized() {
-  resizeCanvas(windowWidth * (4 / 5), windowHeight - 50);
-}
-  </script>
+  function setup() {
+    createCanvas(windowWidth * (4 / 5), windowHeight - 50);
+    noStroke();
+  }
+
+  function draw() {
+    background(0, 25);
+    for (let c of circles) {
+      fill(c.color);
+      ellipse(c.x, c.y, c.r);
+      c.r += 2;
+    }
+    if (circles.length > 100) circles.splice(0, circles.length - 100);
+  }
+
+  function windowResized() {
+    resizeCanvas(windowWidth * (4 / 5), windowHeight - 50);
+  }
+</script>
+
 </body>
 </html>
