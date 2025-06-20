@@ -112,6 +112,7 @@
 </head>
 <body>
 
+<!-- TOP BAR -->
 <div id="topbar">
   <div id="logo">π Visualizer</div>
   <div id="nav-buttons">
@@ -120,6 +121,7 @@
   </div>
 </div>
 
+<!-- TERMINAL DISPLAY -->
 <div id="terminal">
   <div id="pi-output">PI:<br></div>
   <div id="controls">
@@ -136,6 +138,7 @@
   let digitPlayers = {};
   let darkPulse;
   let circles = [];
+  let triangles = [];
   let pulses = [];
   let intervalId = null;
   let hasStarted = false;
@@ -154,15 +157,13 @@
   }
 
   async function loadScratchSamples() {
-  for (let i = 0; i < 10; i++) {
-    const gainNode = new Tone.Gain(0.1).toDestination(); // Adjust volume here (e.g., 0.2 = quieter, 0.6 = louder)
-    digitPlayers[i] = new Tone.Player(`samples/digit${i}.wav`).connect(gainNode);
+    for (let i = 0; i < 10; i++) {
+      const gainNode = new Tone.Gain(0.1).toDestination();
+      digitPlayers[i] = new Tone.Player(`samples/digit${i}.wav`).connect(gainNode);
+    }
+    const darkGain = new Tone.Gain(0.2).toDestination();
+    darkPulse = new Tone.Player("samples/darkPulse.wav").connect(darkGain);
   }
-  const darkGain = new Tone.Gain(0.2).toDestination();
-  darkPulse = new Tone.Player("samples/darkPulse.wav").connect(darkGain);
-}
-
-
   loadPi();
   loadScratchSamples();
 
@@ -186,7 +187,7 @@
         piDigits = piDigits.replace(/^3/, '');
         hasStarted = true;
       }
-      intervalId = setInterval(playNextDigit, 500);
+      intervalId = setInterval(playNextDigit, 600);
       toggleBtn.textContent = "⏸";
     }
   };
@@ -209,13 +210,26 @@
 
     document.getElementById("pi-output").innerHTML += piDigits[index];
 
-    circles.push({
-      x: random(width),
-      y: random(height),
-      r: 0,
-      color: color(random(100, 255), 0, random(100, 255)),
-      created: millis()
-    });
+    const now = millis();
+    if (digit % 2 === 0) {
+      circles.push({
+        x: random(width),
+        y: random(height),
+        r: 0,
+        color: color(random(100, 255), 0, random(100, 255)),
+        created: now
+      });
+    } else {
+      const spacing = width / 12;
+      const xIndex = triangles.length % 12;
+      triangles.push({
+        x: xIndex * spacing + spacing / 2,
+        y: 0,
+        size: spacing * 0.6,
+        color: color(random(100, 255), 0, random(100, 255)),
+        created: now
+      });
+    }
 
     if ((index + 1) % 33 === 0) {
       const wobbleGain = new Tone.Gain(0).toDestination();
@@ -224,8 +238,12 @@
       wobbleGain.gain.linearRampToValueAtTime(0.4, Tone.now() + 1);
       wobbleGain.gain.linearRampToValueAtTime(0.0, Tone.now() + 30);
       osc.start().stop("+30");
-
-      pulses.push({ start: millis(), duration: 30 * 1000 });
+      osc.onstop = () => {
+        osc.dispose();
+        filter.dispose();
+        wobbleGain.dispose();
+      };
+      pulses.push({ start: now, duration: 30 * 1000 });
     }
 
     index++;
@@ -233,37 +251,46 @@
 
   function setup() {
     createCanvas(windowWidth * (4 / 5), windowHeight - 50);
-    noStroke();
+    frameRate(60);
+    pixelDensity(0.4);
   }
 
   function draw() {
     background(0, 25);
-
     let now = millis();
+    noStroke();
     for (let c of circles) {
       let age = now - c.created;
-      if (age > 50000 && age < 60000) {
-        let alpha = map(age, 50000, 60000, 255, 0);
-        fill(red(c.color), green(c.color), blue(c.color), alpha);
-      } else {
-        fill(c.color);
-      }
+      let alpha = age > 50000 ? map(age, 50000, 60000, 255, 0) : 255;
+      fill(red(c.color), green(c.color), blue(c.color), alpha);
       ellipse(c.x, c.y, c.r);
       c.r += 2;
     }
     circles = circles.filter(c => now - c.created < 60000);
+    if (circles.length > 300) circles.splice(0, circles.length - 300);
+
+    for (let t of triangles) {
+      const age = now - t.created;
+      const alpha = age > 50000 ? map(age, 50000, 60000, 255, 0) : 255;
+      fill(red(t.color), green(t.color), blue(t.color), alpha);
+      t.y += 2;
+      const s = t.size;
+      triangle(t.x, t.y, t.x - s / 2, t.y + s, t.x + s / 2, t.y + s);
+    }
+    triangles = triangles.filter(t => now - t.created < 60000);
+    if (triangles.length > 300) triangles.splice(0, triangles.length - 300);
 
     for (let p of pulses) {
       let elapsed = now - p.start;
       if (elapsed < p.duration) {
-        let alpha = map(elapsed, 15000, p.duration, 255, 0);
+        let alpha = elapsed < 15000 ? 255 : map(elapsed, 15000, p.duration, 255, 0);
         for (let y = 0; y < height; y += 10) {
           strokeWeight(random(1, 4));
           stroke(0, 255, 0, alpha);
-          let amplitude = 10;
+          noFill();
           beginShape();
           for (let x = 0; x < width; x += 10) {
-            let yOffset = sin((x + elapsed * 0.05) * 0.05) * amplitude;
+            let yOffset = sin((x + elapsed * 0.05) * 0.05) * 10;
             vertex(x, y + yOffset);
           }
           endShape();
@@ -271,12 +298,14 @@
       }
     }
     pulses = pulses.filter(p => now - p.start < p.duration);
+    if (pulses.length > 100) pulses.splice(0, pulses.length - 100);
   }
 
   function windowResized() {
     resizeCanvas(windowWidth * (4 / 5), windowHeight - 50);
   }
 </script>
+
 
 </body>
 </html>
