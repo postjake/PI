@@ -132,6 +132,9 @@
   let piDigits = '';
   let index = 0;
   let synth;
+  let scratchPlayers = {};
+  let digitPlayers = {};
+  let darkPulse;
   let circles = [];
   let pulses = [];
   let intervalId = null;
@@ -150,17 +153,25 @@
     piDigits = (await resp.text()).replace(/\D/g, '');
   }
 
+  async function loadScratchSamples() {
+  for (let i = 0; i < 10; i++) {
+    const gainNode = new Tone.Gain(0.1).toDestination(); // Adjust volume here (e.g., 0.2 = quieter, 0.6 = louder)
+    digitPlayers[i] = new Tone.Player(`samples/digit${i}.wav`).connect(gainNode);
+  }
+  const darkGain = new Tone.Gain(0.2).toDestination();
+  darkPulse = new Tone.Player("samples/darkPulse.wav").connect(darkGain);
+}
+
+
   loadPi();
+  loadScratchSamples();
 
   document.getElementById("toggle-btn").onclick = async () => {
     await Tone.start();
     if (!synth) {
       const tremolo = new Tone.Tremolo(16, 0.7).start();
       const reverb = new Tone.Reverb({ decay: 3, wet: 0.3 }).toDestination();
-      synth = new Tone.NoiseSynth({
-        noise: { type: 'pink' },
-        envelope: { attack: 0.001, decay: 0.1, sustain: 0.01, release: 0.1 }
-      }).connect(tremolo).connect(reverb);
+      synth = new Tone.PolySynth().connect(tremolo).connect(reverb);
     }
 
     const toggleBtn = document.getElementById("toggle-btn");
@@ -175,7 +186,7 @@
         piDigits = piDigits.replace(/^3/, '');
         hasStarted = true;
       }
-      intervalId = setInterval(playNextDigit, 750);
+      intervalId = setInterval(playNextDigit, 500);
       toggleBtn.textContent = "⏸";
     }
   };
@@ -189,26 +200,32 @@
   function playNextDigit() {
     if (!piDigits || index >= piDigits.length) return;
 
-    synth.triggerAttackRelease("16n");
+    const digit = parseInt(piDigits[index]);
+    if (digitPlayers[digit]) digitPlayers[digit].start();
+
+    if ((index + 1) % 10 === 0 && darkPulse) {
+      darkPulse.start();
+    }
+
     document.getElementById("pi-output").innerHTML += piDigits[index];
 
     circles.push({
       x: random(width),
       y: random(height),
       r: 0,
-      color: color(random(100, 200), 0, random(100, 200))
+      color: color(random(100, 255), 0, random(100, 255)),
+      created: millis()
     });
 
     if ((index + 1) % 33 === 0) {
       const wobbleGain = new Tone.Gain(0).toDestination();
       const filter = new Tone.Filter(100, "lowpass").connect(wobbleGain);
       const osc = new Tone.Oscillator(40, "sine").connect(filter);
-
       wobbleGain.gain.linearRampToValueAtTime(0.4, Tone.now() + 1);
       wobbleGain.gain.linearRampToValueAtTime(0.0, Tone.now() + 30);
       osc.start().stop("+30");
 
-      pulses.push({ alpha: 255, time: 0, startIndex: index });
+      pulses.push({ start: millis(), duration: 30 * 1000 });
     }
 
     index++;
@@ -216,35 +233,44 @@
 
   function setup() {
     createCanvas(windowWidth * (4 / 5), windowHeight - 50);
+    noStroke();
   }
 
   function draw() {
     background(0, 25);
 
+    let now = millis();
     for (let c of circles) {
-      fill(c.color);
-      noStroke();
+      let age = now - c.created;
+      if (age > 50000 && age < 60000) {
+        let alpha = map(age, 50000, 60000, 255, 0);
+        fill(red(c.color), green(c.color), blue(c.color), alpha);
+      } else {
+        fill(c.color);
+      }
       ellipse(c.x, c.y, c.r);
       c.r += 2;
     }
-    if (circles.length > 100) circles.splice(0, circles.length - 100);
+    circles = circles.filter(c => now - c.created < 60000);
 
-    for (let i = pulses.length - 1; i >= 0; i--) {
-      let p = pulses[i];
-      let digitsSince = index - p.startIndex;
-
-      if (digitsSince > 15) p.alpha -= 8;
-
-      stroke(51, 255, 51, p.alpha);
-      for (let y = 0; y < height; y += 10) {
-        let wiggle = sin((y + p.time) * 0.1) * 20;
-        strokeWeight(random(1, 5));
-        line(0, y + wiggle, width, y + wiggle);
+    for (let p of pulses) {
+      let elapsed = now - p.start;
+      if (elapsed < p.duration) {
+        let alpha = map(elapsed, 15000, p.duration, 255, 0);
+        for (let y = 0; y < height; y += 10) {
+          strokeWeight(random(1, 4));
+          stroke(0, 255, 0, alpha);
+          let amplitude = 10;
+          beginShape();
+          for (let x = 0; x < width; x += 10) {
+            let yOffset = sin((x + elapsed * 0.05) * 0.05) * amplitude;
+            vertex(x, y + yOffset);
+          }
+          endShape();
+        }
       }
-
-      p.time += 1;
-      if (p.alpha <= 0 || digitsSince > 33) pulses.splice(i, 1);
     }
+    pulses = pulses.filter(p => now - p.start < p.duration);
   }
 
   function windowResized() {
